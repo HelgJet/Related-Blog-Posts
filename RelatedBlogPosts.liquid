@@ -1,0 +1,287 @@
+{% comment %}
+  Dynamically fetches related blog posts based on product metafields across all blogs.
+  Falls back to globally defined posts if no specific metafields are present.
+{% endcomment %}
+
+{%- if section.settings.blog.articles != blank or product.metafields.custom.related_post_handles.value.size > 0 -%}
+  
+  {{ 'component-article-card.css' | asset_url | stylesheet_tag }}
+  {{ 'component-card.css' | asset_url | stylesheet_tag }}
+  
+  {%- style -%}
+    #RelatedBlogPost-{{ section.id }} {
+      --page-width: {{ section.settings.page_width | divided_by: 10 }}rem;
+    }
+
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+      {% if section.settings.use_section_width == blank %}
+        #RelatedBlogPost-{{ section.id }} .swiper-hidden {
+          padding: 0;
+          margin-left: max(5rem, calc((100vw - var(--page-width) + 10rem - 2.4rem) / 2));
+        }
+      {% endif %}
+    }
+  {%- endstyle -%}
+
+  {% liquid
+    assign found_posts_meta = false
+    if product.metafields.custom.related_post_handles.value.size > 0
+      assign found_posts_meta = true
+      assign related_post_handles = product.metafields.custom.related_post_handles.value
+    endif
+  %}
+
+  <div id="RelatedBlogPost-{{ section.id }}" class="related-posts">
+    <div class="section-{{ section.id }}-padding isolate{% if section.settings.use_section_width %} page-width{% endif %}">
+      <div class="swiper-hidden">
+        {%- if section.settings.title != blank -%}
+          <h2>
+            {{ section.settings.title | escape }}
+          </h2>
+        {%- endif -%}
+
+        <swiper-container
+          class="related-posts__articles"
+          id="RelatedBlogPostSwiper-{{ section.id }}"
+          navigation-next-el="#related-posts--next-button-{{ section.id }}"
+          navigation-prev-el="#related-posts--prev-button-{{ section.id }}"
+        >
+          {% if found_posts_meta == false %}
+            {%- for article in section.settings.blog.articles limit: section.settings.post_limit -%}
+              <swiper-slide lazy="true">
+                <div id="{{ article.id }}" class="related-posts__articles">
+                  {% render 'article-card',
+                    blog: section.settings.blog,
+                    article: article,
+                    media_aspect_ratio: 1.87,
+                    show_image: true,
+                    show_date: true,
+                    show_author: true
+                  %}
+                </div>
+              </swiper-slide>
+            {% endfor %}
+          {% else %}
+            {% for link in linklists.blogs.links %}
+              {% assign blog = link.object %}
+              {% for article in blogs[blog.handle].articles %}
+                {% for handle in related_post_handles %}
+                  {% assign article_parts = article.handle | split: '/' %}
+                  {% assign modified_article_handle = article_parts.last %}
+            
+                  {% if handle == modified_article_handle %}
+                    <swiper-slide lazy="true">
+                      <div id="{{ article.id }}" class="related-posts__articles">
+                        {% render 'article-card',
+                          blog: blog,
+                          article: article,
+                          media_aspect_ratio: 1.87,
+                          show_image: true,
+                          show_date: true,
+                          show_author: true
+                        %}
+                      </div>
+                    </swiper-slide>
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+        </swiper-container>
+        <button id="related-posts--next-button-{{ section.id }}" class="swiper-button swiper-button-next">
+          <svg
+            width="11"
+            height="20"
+            viewBox="0 0 11 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="__web-inspector-hide-shortcut__"
+          >
+            <path d="M0.38296 20.0762C0.111788 19.805 0.111788 19.3654 0.38296 19.0942L9.19758 10.2796L0.38296 1.46497C0.111788 1.19379 0.111788 0.754138 0.38296 0.482966C0.654131 0.211794 1.09379 0.211794 1.36496 0.482966L10.4341 9.55214C10.8359 9.9539 10.8359 10.6053 10.4341 11.007L1.36496 20.0762C1.09379 20.3474 0.654131 20.3474 0.38296 20.0762Z" fill="currentColor"></path>
+          </svg>
+        </button>
+        <button id="related-posts--prev-button-{{ section.id }}" class="swiper-button swiper-button-prev">
+          <svg
+            width="11"
+            height="20"
+            viewBox="0 0 11 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="__web-inspector-hide-shortcut__"
+          >
+            <path d="M0.38296 20.0762C0.111788 19.805 0.111788 19.3654 0.38296 19.0942L9.19758 10.2796L0.38296 1.46497C0.111788 1.19379 0.111788 0.754138 0.38296 0.482966C0.654131 0.211794 1.09379 0.211794 1.36496 0.482966L10.4341 9.55214C10.8359 9.9539 10.8359 10.6053 10.4341 11.007L1.36496 20.0762C1.09379 20.3474 0.654131 20.3474 0.38296 20.0762Z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <style>
+    .related-posts .swiper-hidden {
+      position: relative;
+      padding-left: 1.6rem;
+    }
+
+    .related-posts .swiper-button {
+      width: 4.4rem;
+      height: 4.4rem;
+      background-color: #fff;
+      border-radius: 50%;
+      color: #000;
+      box-shadow: none;
+      border: none;
+      top: 36%;
+      position: absolute;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease;
+    }
+
+    @media screen and (min-width: 750px) {
+        .related-posts .swiper-button {
+          width: 6.4rem;
+          height: 6.4rem;
+          top: 42%;
+        }
+    }
+
+    .related-posts .swiper-button.swiper-button-disabled {
+      display: none;
+    }
+
+    .related-posts .swiper-button svg{
+      width: 1.2rem;
+    }
+
+    .related-posts .swiper-button.swiper-button-prev svg path {
+      transform-origin: center center;
+      transform: rotate(180deg);
+    }
+    .related-posts .swiper-button:hover {
+      opacity: 0.88;
+    }
+    .related-posts .swiper-button.swiper-button-next, .related-posts .swiper-rtl .swiper-button.swiper-button-prev {
+      left: auto;
+      right: 5%;
+    }
+    .related-posts .swiper-button.swiper-button-prev, .related-posts .swiper-rtl .swiper-button.swiper-button-next {
+      right: auto;
+      left: 5%;
+    }
+  </style>
+
+  <script>
+    const swiperEl = document.querySelector("#RelatedBlogPostSwiper-{{ section.id }}");
+    Object.assign(swiperEl, {
+      slidesPerView: 1.5,
+      spaceBetween: 16,
+      breakpoints: {
+        640: {
+          slidesPerView: 1.8,
+          spaceBetween: 16,
+        },
+        768: {
+          slidesPerView: 2.2,
+          spaceBetween: 20,
+        },
+        1024: {
+          slidesPerView: 2.5,
+          spaceBetween: 24,
+        },
+      },
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js" defer></script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Related Blog Posts",
+  "tag": "section",
+  "limit": 1,
+  "class": "section related-post",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "range",
+      "id": "page_width",
+      "min": 1000,
+      "max": 1920,
+      "step": 10,
+      "default": 1200,
+      "unit": "px",
+      "label": "t:settings_schema.layout.settings.page_width.label"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "use_section_width",
+      "label": "Use section width",
+      "default": false
+    },
+
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Related Post",
+      "label": "Title"
+    },
+
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Choose default blog"
+    },
+    {
+      "type": "range",
+      "id": "post_limit",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "label": "Posts limit"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Related Blog Posts"
+    }
+  ]
+}
+{% endschema %}
