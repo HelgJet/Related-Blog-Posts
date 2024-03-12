@@ -4,10 +4,6 @@
 {% endcomment %}
 
 {%- if section.settings.blog.articles != blank or product.metafields.custom.related_post_handles.value.size > 0 -%}
-  
-  {{ 'component-article-card.css' | asset_url | stylesheet_tag }}
-  {{ 'component-card.css' | asset_url | stylesheet_tag }}
-  
   {%- style -%}
     #RelatedBlogPost-{{ section.id }} {
       --page-width: {{ section.settings.page_width | divided_by: 10 }}rem;
@@ -58,16 +54,44 @@
           {% if found_posts_meta == false %}
             {%- for article in section.settings.blog.articles limit: section.settings.post_limit -%}
               <swiper-slide lazy="true">
-                <div id="{{ article.id }}" class="related-posts__articles">
-                  {% render 'article-card',
-                    blog: section.settings.blog,
-                    article: article,
-                    media_aspect_ratio: 1.87,
-                    show_image: true,
-                    show_date: true,
-                    show_author: true
-                  %}
-                </div>
+                {%- if article and article != empty -%}
+                  <div id="{{ article.id }}" class="related-posts__article">
+                    <div class="article-card-wrapper">
+                      <div class="article-card">
+                        {%- if article.image -%}
+                          <div class="card__image">
+                            <picture>
+                              <source
+                                media="(max-width: 1000px)"
+                                srcset="
+                                  {{ article.image | image_url: width: 300 }} 1x,
+                                  {{ article.image | image_url: width: 600 }} 2x,
+                                "
+                              >
+                              {{
+                                article.image
+                                | image_url: width: 1000
+                                | image_tag:
+                                  widths: '300, 600, 1000',
+                                  sizes: '(min-width: 1000px) 760px, (min-width: 800px) calc(100vw - 380px), (min-width: 400px) 298px, 78.75vw',
+                                  loading: 'lazy',
+                                  class: 'img-fluid'
+                              }}
+                            </picture>
+                          </div>
+                        {%- endif -%}
+
+                        <div class="card__information">
+                          <h3 class="card__heading">
+                            <a href="{{ article.url }}" class="full-unstyled-link">
+                              {{ article.title | truncate: 50 | escape }}
+                            </a>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {%- endif -%}
               </swiper-slide>
             {% endfor %}
           {% else %}
@@ -77,18 +101,44 @@
                 {% for handle in related_post_handles %}
                   {% assign article_parts = article.handle | split: '/' %}
                   {% assign modified_article_handle = article_parts.last %}
-            
+
                   {% if handle == modified_article_handle %}
                     <swiper-slide lazy="true">
                       <div id="{{ article.id }}" class="related-posts__articles">
-                        {% render 'article-card',
-                          blog: blog,
-                          article: article,
-                          media_aspect_ratio: 1.87,
-                          show_image: true,
-                          show_date: true,
-                          show_author: true
-                        %}
+                        <div class="article-card-wrapper">
+                          <div class="article-card">
+                            {%- if article.image -%}
+                              <div class="card__image">
+                                <picture>
+                                  <source
+                                    media="(max-width: 1000px)"
+                                    srcset="
+                                      {{ article.image | image_url: width: 300 }} 1x,
+                                      {{ article.image | image_url: width: 600 }} 2x,
+                                    "
+                                  >
+                                  {{
+                                    article.image
+                                    | image_url: width: 1000
+                                    | image_tag:
+                                      widths: '300, 600, 1000',
+                                      sizes: '(min-width: 1000px) 760px, (min-width: 800px) calc(100vw - 380px), (min-width: 400px) 298px, 78.75vw',
+                                      loading: 'lazy',
+                                      class: 'img-fluid'
+                                  }}
+                                </picture>
+                              </div>
+                            {%- endif -%}
+
+                            <div class="card__information">
+                              <h3 class="card__heading">
+                                <a href="{{ article.url }}" class="full-unstyled-link">
+                                  {{ article.title | truncate: 50 | escape }}
+                                </a>
+                              </h3>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </swiper-slide>
                   {% endif %}
@@ -125,13 +175,51 @@
     </div>
   </div>
 
-
   <style>
+    .related-posts .full-unstyled-link {
+      text-decoration: none;
+      color: currentColor;
+      display: block;
+    }
+    
+    .related-posts .card__heading {
+      margin-top: 0;
+    }
+    .related-posts .card__image {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .related-posts .article-card-wrapper:hover img {
+      opacity: 0.88;
+    }
+    
+    .related-posts .card__heading a:after {
+      bottom: 0;
+      content: "";
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 1;
+    }
+    
+    @media screen and (min-width: 750px) {
+      .related-posts .card__information {
+        padding-bottom: 1.7rem;
+        padding-top: 1.7rem;
+      }
+    }
+    
+    .related-posts .card__information {
+      padding: 1.3rem 1rem;
+    }
+    
     .related-posts .swiper-hidden {
       position: relative;
       padding-left: 1.6rem;
     }
-
+    
     .related-posts .swiper-button {
       width: 4.4rem;
       height: 4.4rem;
@@ -149,23 +237,23 @@
       justify-content: center;
       transition: opacity 0.2s ease;
     }
-
+    
     @media screen and (min-width: 750px) {
-        .related-posts .swiper-button {
-          width: 6.4rem;
-          height: 6.4rem;
-          top: 42%;
-        }
+      .related-posts .swiper-button {
+        width: 6.4rem;
+        height: 6.4rem;
+        top: 42%;
+      }
     }
-
+    
     .related-posts .swiper-button.swiper-button-disabled {
       display: none;
     }
-
-    .related-posts .swiper-button svg{
+    
+    .related-posts .swiper-button svg {
       width: 1.2rem;
     }
-
+    
     .related-posts .swiper-button.swiper-button-prev svg path {
       transform-origin: center center;
       transform: rotate(180deg);
@@ -173,14 +261,21 @@
     .related-posts .swiper-button:hover {
       opacity: 0.88;
     }
-    .related-posts .swiper-button.swiper-button-next, .related-posts .swiper-rtl .swiper-button.swiper-button-prev {
+    .related-posts .swiper-button.swiper-button-next,
+    .related-posts .swiper-rtl .swiper-button.swiper-button-prev {
       left: auto;
       right: 5%;
     }
-    .related-posts .swiper-button.swiper-button-prev, .related-posts .swiper-rtl .swiper-button.swiper-button-next {
+    .related-posts .swiper-button.swiper-button-prev,
+    .related-posts .swiper-rtl .swiper-button.swiper-button-next {
       right: auto;
       left: 5%;
     }
+    .img-fluid {
+      max-width: 100%;
+      height: auto;
+      transition: opacity 0.2s ease;
+    }      
   </style>
 
   <script>

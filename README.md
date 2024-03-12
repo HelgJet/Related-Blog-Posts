@@ -26,11 +26,7 @@ Access Your Theme Files: Go to your Shopify Admin, click on "Online Store," then
 
 Create a New Section: In the Sections folder, click "Add a new section." Name it RelatedBlogPosts.liquid or similar, ensuring it reflects the purpose of the section.
 
-Copy code and paste code from RelatedBlogPosts.liquid that is in github link https://github.com/HelgJet/Related-Blog-Posts
-
-Insted this code use your snippet for article card, or paste your code for article card and your style
-
-{% render 'article-card' …  %}
+Copy code and paste code from RelatedBlogPosts.liquid that is on https://github.com/HelgJet/Related-Blog-Posts
 
 Step 5: Configuring the Section Settings
 After creating the section with the appropriate Liquid and schema, you can configure its settings to control how it appears on the product page.
