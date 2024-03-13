@@ -36,17 +36,27 @@
     if product.metafields.custom.related_post_handles.value.size > 0
       assign found_posts_meta = true
       assign related_post_handles = product.metafields.custom.related_post_handles.value
-    endif
+    endif 
   %}
 
   <div id="RelatedBlogPosts-{{ section.id }}" class="related-posts">
     <div class="section-{{ section.id }}-padding isolate{% if section.settings.use_section_width %} page-width{% endif %}">
       <div class="swiper-hidden">
-        {%- if section.settings.title != blank -%}
-          <h2>
-            {{ section.settings.title | escape }}
-          </h2>
-        {%- endif -%}
+
+      {%- if section.settings.title != blank or section.settings.description != blank-%}
+        <div class="section-heading"> 
+          {%- if section.settings.title != blank -%}
+            <h2>
+              {{ section.settings.title | escape }}  
+            </h2>
+          {%- endif -%}
+          {%- if section.settings.description != blank -%} 
+            <p>
+              {{ section.settings.description }}
+            </p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
 
         <swiper-container
           class="related-posts__articles"
@@ -359,6 +369,13 @@
       "id": "title",
       "default": "Related Post",
       "label": "Title"
+    },
+
+    {
+      "type": "text",
+      "id": "description",
+      "default": "Read ours popular posts",
+      "label": "Description"
     },
 
     {
