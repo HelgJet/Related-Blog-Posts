@@ -4,8 +4,9 @@
 {% endcomment %}
 
 {%- if section.settings.blog.articles != blank or product.metafields.custom.related_post_handles.value.size > 0 -%}
+  {% comment %} Dynamicaly styles for section layout {% endcomment %}
   {%- style -%}
-    #RelatedBlogPost-{{ section.id }} {
+    #RelatedBlogPosts-{{ section.id }} {
       --page-width: {{ section.settings.page_width | divided_by: 10 }}rem;
     }
 
@@ -20,13 +21,15 @@
         padding-bottom: {{ section.settings.padding_bottom }}px;
       }
       {% if section.settings.use_section_width == blank %}
-        #RelatedBlogPost-{{ section.id }} .swiper-hidden {
+        #RelatedBlogPosts-{{ section.id }} .swiper-hidden {
           padding: 0;
           margin-left: max(5rem, calc((100vw - var(--page-width) + 10rem - 2.4rem) / 2));
         }
       {% endif %}
     }
   {%- endstyle -%}
+
+{% comment %} Define product with needed meta {% endcomment %}
 
   {% liquid
     assign found_posts_meta = false
@@ -36,7 +39,7 @@
     endif
   %}
 
-  <div id="RelatedBlogPost-{{ section.id }}" class="related-posts">
+  <div id="RelatedBlogPosts-{{ section.id }}" class="related-posts">
     <div class="section-{{ section.id }}-padding isolate{% if section.settings.use_section_width %} page-width{% endif %}">
       <div class="swiper-hidden">
         {%- if section.settings.title != blank -%}
@@ -47,14 +50,16 @@
 
         <swiper-container
           class="related-posts__articles"
-          id="RelatedBlogPostSwiper-{{ section.id }}"
+          id="RelatedBlogPostsSwiper-{{ section.id }}"
           navigation-next-el="#related-posts--next-button-{{ section.id }}"
           navigation-prev-el="#related-posts--prev-button-{{ section.id }}"
         >
+
+        {% comment %} Get articles from section settings if product has not needed metadata {% endcomment %}
           {% if found_posts_meta == false %}
             {%- for article in section.settings.blog.articles limit: section.settings.post_limit -%}
               {%- if article and article != empty -%}
-              <swiper-slide lazy="true">
+                <swiper-slide lazy="true">
                   <div id="{{ article.id }}" class="related-posts__article">
                     <div class="article-card-wrapper">
                       <div class="article-card">
@@ -91,16 +96,26 @@
                       </div>
                     </div>
                   </div>
-              </swiper-slide>
-               {%- endif -%}
+                </swiper-slide>
+              {%- endif -%}
             {% endfor %}
           {% else %}
+
+           {% comment %} 
+           Get articles from section settings if product has metadata 
+           Get handle to all the blogs via linklist 'blogs'
+           {% endcomment %}
+
             {% for link in linklists.blogs.links %}
               {% assign blog = link.object %}
               {% for article in blogs[blog.handle].articles %}
                 {% for handle in related_post_handles %}
+
+                  {% comment %} Get article handle without blog.handle via splitting by '/' and get last part {% endcomment %}
                   {% assign article_parts = article.handle | split: '/' %}
                   {% assign modified_article_handle = article_parts.last %}
+
+                  {% comment %} Equal article handle with handle from metadata {% endcomment %}
 
                   {% if handle == modified_article_handle %}
                     {%- if article and article != empty -%}
@@ -177,13 +192,15 @@
     </div>
   </div>
 
+
+  {% comment %} Style for article card {% endcomment %}
   <style>
     .related-posts .full-unstyled-link {
       text-decoration: none;
       color: currentColor;
       display: block;
     }
-    
+
     .related-posts .card__heading {
       margin-top: 0;
     }
@@ -191,11 +208,11 @@
       position: relative;
       overflow: hidden;
     }
-    
+
     .related-posts .article-card-wrapper:hover img {
       opacity: 0.88;
     }
-    
+
     .related-posts .card__heading a:after {
       bottom: 0;
       content: "";
@@ -205,23 +222,23 @@
       top: 0;
       z-index: 1;
     }
-    
+
     @media screen and (min-width: 750px) {
       .related-posts .card__information {
         padding-bottom: 1.7rem;
         padding-top: 1.7rem;
       }
     }
-    
+
     .related-posts .card__information {
       padding: 1.3rem 1rem;
     }
-    
+
     .related-posts .swiper-hidden {
       position: relative;
       padding-left: 1.6rem;
     }
-    
+
     .related-posts .swiper-button {
       width: 4.4rem;
       height: 4.4rem;
@@ -239,7 +256,7 @@
       justify-content: center;
       transition: opacity 0.2s ease;
     }
-    
+
     @media screen and (min-width: 750px) {
       .related-posts .swiper-button {
         width: 6.4rem;
@@ -247,15 +264,15 @@
         top: 42%;
       }
     }
-    
+
     .related-posts .swiper-button.swiper-button-disabled {
       display: none;
     }
-    
+
     .related-posts .swiper-button svg {
       width: 1.2rem;
     }
-    
+
     .related-posts .swiper-button.swiper-button-prev svg path {
       transform-origin: center center;
       transform: rotate(180deg);
@@ -277,11 +294,14 @@
       max-width: 100%;
       height: auto;
       transition: opacity 0.2s ease;
-    }      
+    }
   </style>
 
+
+  {% comment %} Init swiper carousel {% endcomment %}
+
   <script>
-    const swiperEl = document.querySelector("#RelatedBlogPostSwiper-{{ section.id }}");
+    const swiperEl = document.querySelector("#RelatedBlogPostsSwiper-{{ section.id }}");
     Object.assign(swiperEl, {
       slidesPerView: 1.5,
       spaceBetween: 16,
