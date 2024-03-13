@@ -102,11 +102,12 @@
           {% else %}
 
            {% comment %} 
-           Get articles from section settings if product has metadata 
+           Get articles if product has metadata 
            Get handle to all the blogs via linklist 'blogs'
            {% endcomment %}
 
             {% for link in linklists.blogs.links %}
+            
               {% assign blog = link.object %}
               {% for article in blogs[blog.handle].articles %}
                 {% for handle in related_post_handles %}
