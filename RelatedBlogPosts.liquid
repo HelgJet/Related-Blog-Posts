@@ -53,8 +53,8 @@
         >
           {% if found_posts_meta == false %}
             {%- for article in section.settings.blog.articles limit: section.settings.post_limit -%}
+              {%- if article and article != empty -%}
               <swiper-slide lazy="true">
-                {%- if article and article != empty -%}
                   <div id="{{ article.id }}" class="related-posts__article">
                     <div class="article-card-wrapper">
                       <div class="article-card">
@@ -91,8 +91,8 @@
                       </div>
                     </div>
                   </div>
-                {%- endif -%}
               </swiper-slide>
+               {%- endif -%}
             {% endfor %}
           {% else %}
             {% for link in linklists.blogs.links %}
@@ -103,44 +103,46 @@
                   {% assign modified_article_handle = article_parts.last %}
 
                   {% if handle == modified_article_handle %}
-                    <swiper-slide lazy="true">
-                      <div id="{{ article.id }}" class="related-posts__articles">
-                        <div class="article-card-wrapper">
-                          <div class="article-card">
-                            {%- if article.image -%}
-                              <div class="card__image">
-                                <picture>
-                                  <source
-                                    media="(max-width: 1000px)"
-                                    srcset="
-                                      {{ article.image | image_url: width: 300 }} 1x,
-                                      {{ article.image | image_url: width: 600 }} 2x,
-                                    "
-                                  >
-                                  {{
-                                    article.image
-                                    | image_url: width: 1000
-                                    | image_tag:
-                                      widths: '300, 600, 1000',
-                                      sizes: '(min-width: 1000px) 760px, (min-width: 800px) calc(100vw - 380px), (min-width: 400px) 298px, 78.75vw',
-                                      loading: 'lazy',
-                                      class: 'img-fluid'
-                                  }}
-                                </picture>
-                              </div>
-                            {%- endif -%}
+                    {%- if article and article != empty -%}
+                      <swiper-slide lazy="true">
+                        <div id="{{ article.id }}" class="related-posts__articles">
+                          <div class="article-card-wrapper">
+                            <div class="article-card">
+                              {%- if article.image -%}
+                                <div class="card__image">
+                                  <picture>
+                                    <source
+                                      media="(max-width: 1000px)"
+                                      srcset="
+                                        {{ article.image | image_url: width: 300 }} 1x,
+                                        {{ article.image | image_url: width: 600 }} 2x,
+                                      "
+                                    >
+                                    {{
+                                      article.image
+                                      | image_url: width: 1000
+                                      | image_tag:
+                                        widths: '300, 600, 1000',
+                                        sizes: '(min-width: 1000px) 760px, (min-width: 800px) calc(100vw - 380px), (min-width: 400px) 298px, 78.75vw',
+                                        loading: 'lazy',
+                                        class: 'img-fluid'
+                                    }}
+                                  </picture>
+                                </div>
+                              {%- endif -%}
 
-                            <div class="card__information">
-                              <h3 class="card__heading">
-                                <a href="{{ article.url }}" class="full-unstyled-link">
-                                  {{ article.title | truncate: 50 | escape }}
-                                </a>
-                              </h3>
+                              <div class="card__information">
+                                <h3 class="card__heading">
+                                  <a href="{{ article.url }}" class="full-unstyled-link">
+                                    {{ article.title | truncate: 50 | escape }}
+                                  </a>
+                                </h3>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </swiper-slide>
+                      </swiper-slide>
+                    {% endif %}
                   {% endif %}
                 {% endfor %}
               {% endfor %}
